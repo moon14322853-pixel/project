@@ -2,102 +2,128 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>GreenStep: 탄소 발자국 계산기</title>
+    <title>GreenStep: 탄소 발자국 & 나무 시뮬레이터 by 문민석 </title>
     <style>
-        :root { --leaf: #2ecc71; --earth: #3498db; --bg: #f0f4f8; }
+        :root { --leaf-green: #2ecc71; --trunk-brown: #8d6e63; --bg: #f0f4f8; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h1 { color: #2c3e50; font-size: 24px; text-align: center; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #7f8c8d; font-size: 14px; margin-bottom: 25px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
+        h1 { color: #2c3e50; font-size: 24px; text-align: center; margin-bottom: 20px; }
         
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 5px; }
+        /* 입력 영역 */
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #34495e; margin-bottom: 5px; }
         .input-wrapper { display: flex; align-items: center; gap: 10px; }
-        input { flex: 1; padding: 10px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 16px; }
-        span.unit { width: 60px; font-size: 13px; color: #95a5a6; }
+        input { flex: 1; padding: 8px; border: 1px solid #dcdde1; border-radius: 6px; }
+        span.unit { width: 50px; font-size: 12px; color: #95a5a6; }
 
-        button { width: 100%; padding: 15px; background: var(--leaf); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #27ae60; transform: translateY(-2px); }
+        button { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 15px 0; }
 
-        .result-area { margin-top: 25px; padding: 20px; border-radius: 10px; background: #f9f9f9; display: none; text-align: center; }
-        .total-val { font-size: 32px; font-weight: bold; color: #e67e22; margin: 10px 0; }
-        .tree-info { background: #eafaf1; padding: 15px; border-radius: 8px; color: #27ae60; font-weight: 600; margin-top: 15px; }
+        /* 나무 시각화 영역 */
+        .visual-box {
+            height: 180px; background: linear-gradient(#e3f2fd, #ffffff);
+            border-radius: 10px; display: flex; justify-content: center; align-items: flex-end;
+            position: relative; overflow: hidden; border: 1px solid #e2e8f0;
+        }
+        .tree { position: relative; transition: all 0.5s ease; }
+        .trunk { width: 15px; height: 40px; background: var(--trunk-brown); margin: 0 auto; border-radius: 2px; }
+        .leaves {
+            width: 80px; height: 80px; background: var(--leaf-green);
+            border-radius: 50% 50% 50% 50%; position: relative; bottom: -5px;
+            box-shadow: -15px 10px 0 -5px var(--leaf-green), 15px 10px 0 -5px var(--leaf-green);
+            transition: all 0.8s ease;
+        }
+
+        /* 결과 영역 */
+        .result-area { margin-top: 20px; text-align: center; }
+        .total-val { font-size: 28px; font-weight: bold; color: #2c3e50; }
+        .tree-info { margin-top: 10px; padding: 12px; border-radius: 8px; font-size: 14px; transition: 0.3s; }
+        
+        /* 상태별 클래스 */
+        .healthy { background: #eafaf1; color: #27ae60; }
+        .sick { background: #fef9e7; color: #f39c12; }
+        .dying { background: #fdedec; color: #e74c3c; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h1>GreenStep by ZeroZero 🌿</h1>
-    <p class="subtitle">나의 일상이 지구에 남기는 흔적을 계산해보세요.</p>
-
-    <div class="input-group">
-        <label>한 달 전기 사용량</label>
-        <div class="input-wrapper">
-            <input type="number" id="elec" value="250">
-            <span class="unit">kWh</span>
+    
+    <div class="visual-box">
+        <div class="tree" id="treeVisual">
+            <div class="leaves" id="leafVisual"></div>
+            <div class="trunk"></div>
         </div>
     </div>
 
-    <div class="input-group">
-        <label>한 달 도시가스 사용량</label>
-        <div class="input-wrapper">
-            <input type="number" id="gas" value="30">
-            <span class="unit">m³</span>
+    <div class="input-grid" style="margin-top: 20px;">
+        <div class="input-group">
+            <label>전기 사용량 (kWh)</label>
+            <div class="input-wrapper"><input type="number" id="elec" value="200"><span class="unit">kWh</span></div>
+        </div>
+        <div class="input-group">
+            <label>도시가스 (m³)</label>
+            <div class="input-wrapper"><input type="number" id="gas" value="20"><span class="unit">m³</span></div>
+        </div>
+        <div class="input-group">
+            <label>주행 거리 (km)</label>
+            <div class="input-wrapper"><input type="number" id="car" value="300"><span class="unit">km</span></div>
         </div>
     </div>
 
-    <div class="input-group">
-        <label>자동차 주행 거리 (휘발유 기준)</label>
-        <div class="input-wrapper">
-            <input type="number" id="car" value="500">
-            <span class="unit">km</span>
-        </div>
-    </div>
+    <button onclick="calculateCarbon()">분석 로직 실행</button>
 
-    <button onclick="calculateCarbon()">탄소 발자국 계산하기</button>
-
-    <div id="resultArea" class="result-area">
-        <div style="font-size: 14px; color: #7f8c8d;">나의 월간 탄소 배출량</div>
+    <div class="result-area">
         <div class="total-val"><span id="totalRes">0</span> <small>kg CO₂eq</small></div>
-        
-        <div class="tree-info" id="treeRes">
-            이 탄소를 모두 흡수하려면 소나무 0그루가 필요합니다.
+        <div id="treeRes" class="tree-info healthy">
+            데이터를 입력하고 환경 상태를 확인하세요.
         </div>
-        
-        <p style="font-size: 12px; color: #bdc3c7; margin-top: 15px;">
-            * 배출 계수 출처: 환경부 공공기관 탄소중립 기준
-        </p>
     </div>
 </div>
 
 <script>
     function calculateCarbon() {
-        // 1. 입력값 가져오기
         const elec = parseFloat(document.getElementById('elec').value) || 0;
         const gas = parseFloat(document.getElementById('gas').value) || 0;
         const car = parseFloat(document.getElementById('car').value) || 0;
 
-        // 2. 탄소 배출 계수 (Emission Factor) 적용
-        // 전기: 0.4781 kgCO2/kWh
-        // 가스: 2.1762 kgCO2/m³
-        // 휘발유차(평균): 0.14 kgCO2/km
-        const elecCarbon = elec * 0.4781;
-        const gasCarbon = gas * 2.1762;
-        const carCarbon = car * 0.14;
-
-        const totalCarbon = elecCarbon + gasCarbon + carCarbon;
-
-        // 3. 나무 상쇄 계산 (소나무 1그루당 연간 약 6.6kg CO2 흡수 / 월간 약 0.55kg)
+        // 배출량 계산
+        const totalCarbon = (elec * 0.4781) + (gas * 2.1762) + (car * 0.14);
         const treeCount = Math.ceil(totalCarbon / 0.55);
 
-        // 4. 결과 표시
-        document.getElementById('resultArea').style.display = 'block';
-        document.getElementById('totalRes').innerText = totalCarbon.toLocaleString(undefined, {maximumFractionDigits: 2});
-        document.getElementById('treeRes').innerHTML = `이 탄소를 모두 흡수하려면<br><strong>소나무 ${treeCount}그루</strong>를 심어야 합니다! 🌲`;
-        
-        // 스크롤 이동
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        // 시각화 로직
+        const leaf = document.getElementById('leafVisual');
+        const info = document.getElementById('treeRes');
+        const totalSpan = document.getElementById('totalRes');
+
+        totalSpan.innerText = totalCarbon.toFixed(1);
+
+        // 배출량에 따른 나무 상태 변화 (임의 기준: 200kg 초과 시 위험)
+        if (totalCarbon < 150) {
+            // 건강한 상태
+            leaf.style.backgroundColor = "#2ecc71";
+            leaf.style.transform = "scale(1.1)";
+            leaf.style.filter = "grayscale(0%)";
+            info.className = "tree-info healthy";
+            info.innerHTML = `안전: 소나무 <strong>${treeCount}그루</strong>로 상쇄 가능합니다.`;
+        } else if (totalCarbon < 300) {
+            // 주의 상태
+            leaf.style.backgroundColor = "#f1c40f";
+            leaf.style.transform = "scale(0.9)";
+            leaf.style.filter = "grayscale(30%)";
+            info.className = "tree-info sick";
+            info.innerHTML = `경고: 배출량이 많아 나무가 힘들어합니다. (${treeCount}그루 필요)`;
+        } else {
+            // 위험 상태 (시듦)
+            leaf.style.backgroundColor = "#a1887f";
+            leaf.style.transform = "scale(0.7) rotate(5deg)";
+            leaf.style.filter = "grayscale(80%)";
+            info.className = "tree-info dying";
+            info.innerHTML = `위험: 과도한 탄소로 나무가 시들고 있습니다! (${treeCount}그루 필요)`;
+        }
     }
+
+    window.onload = calculateCarbon;
 </script>
 
 </body>
