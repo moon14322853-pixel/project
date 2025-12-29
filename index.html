@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    <button onclick="calculateCarbon()">분석 로직 실행</button>
+    <button onclick="calculateCarbon()">계산 실행</button>
 
     <div class="result-area">
         <div class="total-val"><span id="totalRes">0</span> <small>kg CO₂eq</small></div>
@@ -105,7 +105,7 @@
             leaf.style.transform = "scale(1.1)";
             leaf.style.filter = "grayscale(0%)";
             info.className = "tree-info healthy";
-            info.innerHTML = `안전: 소나무 <strong>${treeCount}그루</strong>로 상쇄 가능합니다.`;
+            info.innerHTML = `안전: 나무 <strong>${treeCount}그루</strong>로 상쇄 가능합니다.`;
         } else if (totalCarbon < 300) {
             // 주의 상태
             leaf.style.backgroundColor = "#f1c40f";
