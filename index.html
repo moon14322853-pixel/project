@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>GreenStep: 탄소 발자국 계산기</title>
+    <style>
+        :root { --leaf: #2ecc71; --earth: #3498db; --bg: #f0f4f8; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h1 { color: #2c3e50; font-size: 24px; text-align: center; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #7f8c8d; font-size: 14px; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 5px; }
+        .input-wrapper { display: flex; align-items: center; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 16px; }
+        span.unit { width: 60px; font-size: 13px; color: #95a5a6; }
+
+        button { width: 100%; padding: 15px; background: var(--leaf); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #27ae60; transform: translateY(-2px); }
+
+        .result-area { margin-top: 25px; padding: 20px; border-radius: 10px; background: #f9f9f9; display: none; text-align: center; }
+        .total-val { font-size: 32px; font-weight: bold; color: #e67e22; margin: 10px 0; }
+        .tree-info { background: #eafaf1; padding: 15px; border-radius: 8px; color: #27ae60; font-weight: 600; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>GreenStep by ZeroZero 🌿</h1>
+    <p class="subtitle">나의 일상이 지구에 남기는 흔적을 계산해보세요.</p>
+
+    <div class="input-group">
+        <label>한 달 전기 사용량</label>
+        <div class="input-wrapper">
+            <input type="number" id="elec" value="250">
+            <span class="unit">kWh</span>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>한 달 도시가스 사용량</label>
+        <div class="input-wrapper">
+            <input type="number" id="gas" value="30">
+            <span class="unit">m³</span>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>자동차 주행 거리 (휘발유 기준)</label>
+        <div class="input-wrapper">
+            <input type="number" id="car" value="500">
+            <span class="unit">km</span>
+        </div>
+    </div>
+
+    <button onclick="calculateCarbon()">탄소 발자국 계산하기</button>
+
+    <div id="resultArea" class="result-area">
+        <div style="font-size: 14px; color: #7f8c8d;">나의 월간 탄소 배출량</div>
+        <div class="total-val"><span id="totalRes">0</span> <small>kg CO₂eq</small></div>
+        
+        <div class="tree-info" id="treeRes">
+            이 탄소를 모두 흡수하려면 소나무 0그루가 필요합니다.
+        </div>
+        
+        <p style="font-size: 12px; color: #bdc3c7; margin-top: 15px;">
+            * 배출 계수 출처: 환경부 공공기관 탄소중립 기준
+        </p>
+    </div>
+</div>
+
+<script>
+    function calculateCarbon() {
+        // 1. 입력값 가져오기
+        const elec = parseFloat(document.getElementById('elec').value) || 0;
+        const gas = parseFloat(document.getElementById('gas').value) || 0;
+        const car = parseFloat(document.getElementById('car').value) || 0;
+
+        // 2. 탄소 배출 계수 (Emission Factor) 적용
+        // 전기: 0.4781 kgCO2/kWh
+        // 가스: 2.1762 kgCO2/m³
+        // 휘발유차(평균): 0.14 kgCO2/km
+        const elecCarbon = elec * 0.4781;
+        const gasCarbon = gas * 2.1762;
+        const carCarbon = car * 0.14;
+
+        const totalCarbon = elecCarbon + gasCarbon + carCarbon;
+
+        // 3. 나무 상쇄 계산 (소나무 1그루당 연간 약 6.6kg CO2 흡수 / 월간 약 0.55kg)
+        const treeCount = Math.ceil(totalCarbon / 0.55);
+
+        // 4. 결과 표시
+        document.getElementById('resultArea').style.display = 'block';
+        document.getElementById('totalRes').innerText = totalCarbon.toLocaleString(undefined, {maximumFractionDigits: 2});
+        document.getElementById('treeRes').innerHTML = `이 탄소를 모두 흡수하려면<br><strong>소나무 ${treeCount}그루</strong>를 심어야 합니다! 🌲`;
+        
+        // 스크롤 이동
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
